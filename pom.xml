@@ -25,6 +25,17 @@
     <name>streams-persist-neo4j</name>
     <version>0.3-incubating-SNAPSHOT</version>
 
+    <distributionManagement>
+        <repository>
+            <id>repo</id>
+            <url>https://github.com/steveblackmon/maven-repo/raw/master/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshot-repo</id>
+            <url>https://github.com/steveblackmon/maven-repo/raw/master/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.streams</groupId>
