@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.streams.config.ComponentConfigurator;
 import org.apache.streams.config.StreamsConfigurator;
+import org.apache.streams.converter.TypeConverterUtil;
 import org.apache.streams.core.StreamsDatum;
 import org.apache.streams.core.StreamsPersistWriter;
 import org.apache.streams.graph.GraphBinaryConfiguration;
@@ -76,6 +77,10 @@ public class Neo4jBinaryGraphPersistWriter implements StreamsPersistWriter {
         this.configuration = configuration;
     }
 
+    public String getId() {
+        return STREAMS_ID;
+    }
+
     public void prepare(Object configurationObject) {
 
         mapper = StreamsJacksonMapper.getInstance();
@@ -97,7 +102,7 @@ public class Neo4jBinaryGraphPersistWriter implements StreamsPersistWriter {
         if( newGraph ) {
             graphutil.addUniqueIndex(graph, globalLabel, "id", false);
             for( String field: configuration.getIndexFields()) {
-                graphutil.addUniqueIndex(graph, globalLabel, field, false);
+                graphutil.addIndex(graph, globalLabel, field, false);
             }
         }
 
@@ -116,23 +121,27 @@ public class Neo4jBinaryGraphPersistWriter implements StreamsPersistWriter {
 
         if (entry.getDocument() instanceof Activity) {
             activity = (Activity) entry.getDocument();
-        } if (entry.getDocument() instanceof ActivityObject) {
+        } else if (entry.getDocument() instanceof ActivityObject) {
             activityObject = (ActivityObject) entry.getDocument();
-        } else if (entry.getDocument() instanceof ObjectNode) {
-            try {
-                activity = mapper.convertValue(entry.getDocument(), Activity.class);
-            } catch( Exception e ) {
-                activityObject = mapper.convertValue(entry.getDocument(), ActivityObject.class);
+        } else {
+            ObjectNode objectNode;
+            if (entry.getDocument() instanceof ObjectNode) {
+                objectNode = (ObjectNode) entry.getDocument();
+            } else if( entry.getDocument() instanceof String) {
+                objectNode = (ObjectNode) TypeConverterUtil.getInstance().convert(entry.getDocument(), ObjectNode.class);
+            } else {
+                LOGGER.error("Can't handle input: ", entry);
+                return;
             }
-        } else if (entry.getDocument() instanceof String) {
-            try {
-                activity = mapper.readValue((String) entry.getDocument(), Activity.class);
-            } catch (Throwable e1) {
+
+            if( objectNode.get("verb") != null ) {
                 try {
-                    activityObject = mapper.readValue((String) entry.getDocument(), ActivityObject.class);
-                } catch( Exception e2 ) {
-                    LOGGER.error("Can't handle input: ", e2);
+                    activity = mapper.convertValue(entry.getDocument(), Activity.class);
+                } catch (Exception e) {
+                    activityObject = mapper.convertValue(entry.getDocument(), ActivityObject.class);
                 }
+            } else {
+                activityObject = mapper.convertValue(entry.getDocument(), ActivityObject.class);
             }
         }
 

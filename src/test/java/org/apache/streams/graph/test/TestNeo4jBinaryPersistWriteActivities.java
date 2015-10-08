@@ -65,13 +65,13 @@ import java.util.Set;
  *
  * Test that graph db responses can be converted to streams data
  */
-public class TestNeo4jBinaryPersistWriter {
+public class TestNeo4jBinaryPersistWriteActivities {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(TestNeo4jBinaryPersistWriter.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(TestNeo4jBinaryPersistWriteActivities.class);
 
     private final static ObjectMapper mapper = StreamsJacksonMapper.getInstance();
 
-    private final String testGraphFile = "target/graph.neo4j";
+    private final String testGraphFile = "target/activities.neo4j";
 
     private GraphBinaryConfiguration testConfiguration;
 
@@ -93,15 +93,15 @@ public class TestNeo4jBinaryPersistWriter {
     }
 
     @Test
-    public void testNeo4jBinaryPersistWriter() throws Exception {
+    public void testNeo4jBinaryPersistWriteActivities() throws Exception {
 
-        InputStream testActivityFolderStream = TestNeo4jBinaryPersistWriter.class.getClassLoader()
+        InputStream testActivityFolderStream = TestNeo4jBinaryPersistWriteActivities.class.getClassLoader()
                 .getResourceAsStream("activities");
         List<String> files = IOUtils.readLines(testActivityFolderStream, Charsets.UTF_8);
 
         for( String file : files) {
             LOGGER.info("File: " + file);
-            InputStream testActivityFileStream = TestNeo4jBinaryPersistWriter.class.getClassLoader()
+            InputStream testActivityFileStream = TestNeo4jBinaryPersistWriteActivities.class.getClassLoader()
                     .getResourceAsStream("activities/" + file);
             Activity activity = mapper.readValue(testActivityFileStream, Activity.class);
             activity.getActor().setId(activity.getActor().getObjectType());
@@ -109,14 +109,6 @@ public class TestNeo4jBinaryPersistWriter {
             if( !Strings.isNullOrEmpty((String)activity.getObject().getAdditionalProperties().get("verb"))) {
                 activity.getObject().setObjectType((String) activity.getObject().getAdditionalProperties().get("verb"));
                 activity.getObject().setId(activity.getObject().getObjectType());
-            }
-            if( !Strings.isNullOrEmpty(activity.getActor().getId())) {
-                StreamsDatum actorDatum = new StreamsDatum(activity.getActor(), activity.getActor().getId());
-                graphPersistWriter.write( actorDatum );
-            }
-            if( !Strings.isNullOrEmpty(activity.getObject().getId())) {
-                StreamsDatum objectDatum = new StreamsDatum(activity.getObject(), activity.getObject().getId());
-                graphPersistWriter.write( objectDatum );
             }
             if( !Strings.isNullOrEmpty(activity.getVerb()) &&
                 !Strings.isNullOrEmpty(activity.getActor().getId()) &&
@@ -157,7 +149,6 @@ public class TestNeo4jBinaryPersistWriter {
         Node leaveRelationshipEnd = leaveRelationship.getEndNode();
         Assert.assertEquals(leaveRelationshipStart, person);
         Assert.assertEquals(leaveRelationshipEnd, organization);
-
 
     }
 }

@@ -25,6 +25,12 @@
     <name>streams-persist-neo4j</name>
     <version>0.3-incubating-SNAPSHOT</version>
 
+    <scm>
+        <connection>scm:git:git@github.com:steveblackmon/streams-persist-neo4j.git</connection>
+        <developerConnection>scm:git:git@github.com:steveblackmon/streams-persist-neo4j.git</developerConnection>
+        <url>scm:git:git@github.com:steveblackmon/streams-persist-neo4j.git</url>
+    </scm>
+
     <distributionManagement>
         <repository>
             <id>repo</id>
@@ -50,6 +56,11 @@
         <dependency>
             <groupId>org.apache.streams</groupId>
             <artifactId>streams-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.streams</groupId>
+            <artifactId>streams-converters</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
